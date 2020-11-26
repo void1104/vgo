@@ -1,4 +1,4 @@
-package context
+package core
 
 import (
 	"encoding/json"
@@ -13,6 +13,8 @@ Context随着每一个请求的出现而产生，请求的结束而销毁，而�
 
 */
 type H map[string]interface{}
+
+const A = 100
 
 type Context struct {
 	// origin objects

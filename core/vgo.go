@@ -1,32 +1,24 @@
 package core
 
 import (
-	"fmt"
 	"net/http"
 )
 
-/**
-优化点：
-	1. 404时返回一个页面，而不是单纯的文字
-	2. 当handler传值为null时，使用默认handler
-*/
-
 // HandlerFunc defines the request handler used by vgo
-type HandlerFunc func(w http.ResponseWriter, r *http.Request)
+type HandlerFunc func(c *Context)
 
 // Engine implement the interface of ServeHTTP
 type Engine struct {
-	router map[string]HandlerFunc
+	router *router
 }
 
 // New is the constuctor of vgo.Engine
 func New() *Engine {
-	return &Engine{router: make(map[string]HandlerFunc)}
+	return &Engine{router: newRouter()}
 }
 
 func (engine *Engine) addRoute(method string, pattern string, handler HandlerFunc) {
-	key := method + "-" + pattern
-	engine.router[key] = handler
+	engine.router.addRoute(method, pattern, handler)
 }
 
 // GET defines the method to add GET request
@@ -45,11 +37,6 @@ func (engine *Engine) Run(addr string) (err error) {
 }
 
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	key := req.Method + "-" + req.URL.Path
-	if handler, ok := engine.router[key]; ok {
-		handler(w, req)
-	} else {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(w, "404 NOT FOUND：%s\n", req.URL)
-	}
+	ctx := newContext(w, req)
+	engine.router.handle(ctx)
 }
