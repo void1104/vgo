@@ -7,12 +7,12 @@ type HandlerFunc func(ctx *Context)
 
 // Engine implements the interface of ServeHTTP
 type Engine struct {
-	router *router
+	router *Router
 }
 
 // New is the constructor of vgo.Engine
 func New() *Engine {
-	return &Engine{router: newRouter()}
+	return &Engine{router: NewRouter()}
 }
 
 func (engine *Engine) addRoute(method string, pattern string, handler HandlerFunc) {

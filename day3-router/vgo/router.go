@@ -5,13 +5,13 @@ import (
 	"strings"
 )
 
-type router struct {
+type Router struct {
 	roots    map[string]*node // 每种http方法，对应一颗tire树
 	handlers map[string]HandlerFunc
 }
 
-func newRouter() *router {
-	return &router{
+func NewRouter() *Router {
+	return &Router{
 		roots:    make(map[string]*node),
 		handlers: make(map[string]HandlerFunc),
 	}
@@ -37,7 +37,7 @@ func parsePattern(pattern string) []string {
 }
 
 // 注册路由
-func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
+func (r *Router) addRoute(method string, pattern string, handler HandlerFunc) {
 	parts := parsePattern(pattern)
 
 	key := method + "-" + pattern // 以方法和url作为key，对应的handler作为value
@@ -50,7 +50,7 @@ func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
 }
 
 // 寻找路由
-func (r *router) getRouter(method string, path string) (*node, map[string]string) {
+func (r *Router) getRouter(method string, path string) (*node, map[string]string) {
 	searchParts := parsePattern(path)
 	params := make(map[string]string)
 	root, ok := r.roots[method]
@@ -78,7 +78,7 @@ func (r *router) getRouter(method string, path string) (*node, map[string]string
 }
 
 // 处理函数
-func (r *router) handle(c *Context) {
+func (r *Router) handle(c *Context) {
 	n, params := r.getRouter(c.Method, c.Path)
 	if n != nil {
 		c.Params = params
