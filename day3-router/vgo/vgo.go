@@ -1,18 +1,16 @@
-package core
+package vgo
 
-import (
-	"net/http"
-)
+import "net/http"
 
 // HandlerFunc defines the request handler used by vgo
-type HandlerFunc func(c *Context)
+type HandlerFunc func(ctx *Context)
 
-// Engine implement the interface of ServeHTTP
+// Engine implements the interface of ServeHTTP
 type Engine struct {
 	router *router
 }
 
-// New is the constuctor of vgo.Engine
+// New is the constructor of vgo.Engine
 func New() *Engine {
 	return &Engine{router: newRouter()}
 }
@@ -31,12 +29,12 @@ func (engine *Engine) POST(pattern string, handler HandlerFunc) {
 	engine.addRoute("POST", pattern, handler)
 }
 
-// Run defines the methods to start a http server
+// Run defines the method to start http server
 func (engine *Engine) Run(addr string) (err error) {
 	return http.ListenAndServe(addr, engine)
 }
 
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	ctx := newContext(w, req)
-	engine.router.handle(ctx)
+	c := newContext(w, req)
+	engine.router.handle(c)
 }
