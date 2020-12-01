@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func main(){
+func main() {
 	r := vgo.New()
 	r.GET("/", func(ctx *vgo.Context) {
 		ctx.HTML(http.StatusOK, "<h1>Hello dnw</h1>")
@@ -20,7 +20,7 @@ func main(){
 	})
 
 	r.GET("/assets/*filepath", func(ctx *vgo.Context) {
-		ctx.JSON(http.StatusOK, vgo.H{"filepath":ctx.Param("filepath")})
+		ctx.JSON(http.StatusOK, vgo.H{"filepath": ctx.Param("filepath")})
 	})
 
 	r.Run(":9999")

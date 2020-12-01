@@ -39,6 +39,6 @@ func Recovery() vgo.HandlerFunc {
 			}
 		}()
 
-		//c.Next()
+		c.Next()
 	}
 }
