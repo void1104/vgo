@@ -16,7 +16,7 @@ func New() *Engine {
 }
 
 func (engine *Engine) addRoute(method string, pattern string, handler HandlerFunc) {
-	engine.router.addRoute(method, pattern, handler)
+	engine.router.AddRoute(method, pattern, handler)
 }
 
 // GET defines the method to add GET request
@@ -36,5 +36,5 @@ func (engine *Engine) Run(addr string) (err error) {
 
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	c := newContext(w, req)
-	engine.router.handle(c)
+	engine.router.Handle(c)
 }

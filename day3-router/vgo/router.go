@@ -37,7 +37,7 @@ func parsePattern(pattern string) []string {
 }
 
 // 注册路由
-func (r *Router) addRoute(method string, pattern string, handler HandlerFunc) {
+func (r *Router) AddRoute(method string, pattern string, handler HandlerFunc) {
 	parts := parsePattern(pattern)
 
 	key := method + "-" + pattern // 以方法和url作为key，对应的handler作为value
@@ -78,7 +78,7 @@ func (r *Router) getRouter(method string, path string) (*node, map[string]string
 }
 
 // 处理函数
-func (r *Router) handle(c *Context) {
+func (r *Router) Handle(c *Context) {
 	n, params := r.getRouter(c.Method, c.Path)
 	if n != nil {
 		c.Params = params
