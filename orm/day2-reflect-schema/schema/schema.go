@@ -7,7 +7,7 @@ import (
 )
 
 /**
-Dialect实现了一些特定的SQL语句的转换，接下来我们将要实现ORM框架中最为核心的转换--对象(object)和表(table)的转换。
+Dialect实现了一些特定的SQL语句的转换，这里实现ORM框架中最为核心的转换--对象(object)和表(table)的转换。
 给定一个任意的对象，转换为关系型数据库中的表结构。
 */
 
@@ -32,14 +32,14 @@ func (schema *Schema) GetField(name string) *Field {
 }
 
 /**
-将任意的对象解析为Schema实例
-TypeOf() 和 ValueOf()是reflect包最为基本也是最重要的2个方法，分别用来返回入参的类型和值。
-因为设计的入参是一个对象的指针，因此需要reflect.Indirect()获取指针指向的实例。
-modelType.Name() 获取到结构体的名称作为表名
-NumField() 获取到实例的字段的个数，然后通过下标获取到特定字段p := modelType.Field(i)
+将任意的对象解析为Schema实例（利用反射）
+TypeOf() 和 ValueOf()：是reflect包最为基本也是最重要的2个方法，分别用来获取类型和值。
+modelType.Name()：获取到结构体的名称作为表名
+NumField()：获取到实例的字段的个数，然后通过下标获取到特定字段p := modelType.Field(i)
 p.Name即字段名，p.Type即字段类型，通过(Dialect).DataTypeOf()转换为数据库的字段类型，p.Tag即额外的约束条件
 */
 func Parse(dest interface{}, d dialect.Dialect) *Schema {
+	// 因为设计的入参是一个对象的指针，因此需要reflect.Indirect()获取指针指向的实例。
 	modelType := reflect.Indirect(reflect.ValueOf(dest)).Type()
 	schema := &Schema{
 		Model:    dest,
@@ -57,9 +57,9 @@ func Parse(dest interface{}, d dialect.Dialect) *Schema {
 			if v, ok := p.Tag.Lookup("vgoorm"); ok {
 				field.Tag = v
 			}
-			schema.Fields = append(schema.Fields, field)
+			schema.Fields = append(schema.Fields, field) // 将字段添加到schema中
 			schema.FieldNames = append(schema.FieldNames, p.Name)
-			schema.fieldMap[p.Name] = field
+			schema.fieldMap[p.Name] = field // 以字段名为key，具体字段信息为value，存储到map
 		}
 	}
 	return schema

@@ -14,11 +14,11 @@ import (
 Session 核心功能是与数据库进行交互
 */
 type Session struct {
-	db       *sql.DB
-	dialect  dialect.Dialect
-	refTable *schema.Schema
-	sql      strings.Builder
-	sqlVars  []interface{}
+	db       *sql.DB         // 标准库中与数据库交互的对象
+	dialect  dialect.Dialect // 用于不同数据库的兼容，转换数据类型的结构体
+	refTable *schema.Schema  // 被解析后的表模型转换为Schema
+	sql      strings.Builder // 执行的sql，因为拼接操作很多，所以用builder类型
+	sqlVars  []interface{}   // 用于占位符的sql参数
 }
 
 func New(db *sql.DB, dialect dialect.Dialect) *Session {
@@ -80,10 +80,9 @@ func (s *Session) QueryRows() (rows *sql.Rows, err error) {
 
 /**
 Model() 方法用于给refTable赋值。解析操作是比较耗时的，因此将解析的结果保存在成员变量refTable中，
-即使Model()被调用多次，如果传入的结构体名称不发生变化，则不会更新refTable的值。
 */
 func (s *Session) Model(value interface{}) *Session {
-	// nil or different model, update refTable
+	// 即使Model()被调用多次，如果传入的结构体名称不发生变化，则不会更新refTable的值。
 	if s.refTable == nil || reflect.TypeOf(value) != reflect.TypeOf(s.refTable.Model) {
 		s.refTable = schema.Parse(value, s.dialect)
 	}
@@ -101,8 +100,8 @@ func (s *Session) RefTable() *schema.Schema {
 }
 
 /**
-实现数据库表的创建，删除和判断是否存在功能。三个方法的实现逻辑是相似的，利用RefTable()
-返回的数据库表和字段的信息，拼接出SQL语句，调用原生SQL接口执行。
+实现数据库表的创建，删除和判断是否存在功能。三个方法的实现逻辑是相似的，
+利用RefTable()返回的数据库表和字段的信息，拼接出SQL语句，调用原生SQL接口执行。
 */
 func (s *Session) CreateTable() error {
 	table := s.RefTable()

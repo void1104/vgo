@@ -45,7 +45,7 @@ func _values(values ...interface{}) (string, []interface{}) {
 	var vars []interface{}
 	sql.WriteString("VALUES")
 	for i, value := range values {
-		v := value.([]interface{})
+		v := value.([]interface{}) // 这句是什么意思？
 		if bindStr == "" {
 			bindStr = genBindVars(len(v))
 		}

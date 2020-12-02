@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"strings"
 	"vgo/orm/day1-database-sql/log"
-	"vgo/orm/day2-reflect-schema/dialect"
-	"vgo/orm/day2-reflect-schema/schema"
 	"vgo/orm/day3-save-query/clause"
+	"vgo/orm/day3-save-query/dialect"
+	"vgo/orm/day3-save-query/schema"
 )
 
 /**

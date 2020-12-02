@@ -28,8 +28,6 @@ type Engine struct {
 Engine的逻辑非常简单，最重要的方法是NewEngine,NewEngine主要做了两件事
 1. 连接数据库
 2. 调用db.Ping(), 检查数据库是否能够正常连接
-另外呢，Engine提供了NewSession()方法，这样可以通过Engine实例创建绘画，进而与数据库
-进行交互。
 */
 func NewEngine(driver, source string) (e *Engine, err error) {
 	db, err := sql.Open(driver, source)
@@ -54,6 +52,7 @@ func (engine *Engine) Close() {
 	log.Info("Close database success")
 }
 
+// NewSession() 可以通过Engine实例创建会话，进而与数据库进行交互。
 func (engine *Engine) NewSession() *session.Session {
 	return session.New(engine.db)
 }

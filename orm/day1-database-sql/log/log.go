@@ -21,6 +21,7 @@ import (
 第一步：创建2个日志实例，分别用于打印Info和Error日志
 */
 var (
+	// 第一个参数设置日志数据写入的目的地,第二个参数设置日志前缀，第三个参数设置日志记录属性
 	errorLog = log.New(os.Stdout, "\033[31m[error]\033[0m ", log.LstdFlags|log.Lshortfile)
 	infoLog  = log.New(os.Stdout, "\033[34m[info]\033[0m ", log.LstdFlags|log.Lshortfile)
 	loggers  = []*log.Logger{errorLog, infoLog}
@@ -36,7 +37,7 @@ var (
 )
 
 /**
-第二步：支持设置日志的层级（InfoLevel, ErrorLevel, Disabled）
+第二步：支持设置日志的层级（ InfoLevel , ErrorLevel, Disabled ）
 */
 // log level
 const (
@@ -53,7 +54,8 @@ func SetLevel(level int) {
 	for _, logger := range loggers {
 		logger.SetOutput(os.Stdout)
 	}
-
+	// 三个层次声明为三个变量，通过控制Output，来控制日志是否打印。
+	// 如果设置为ErrorLevel，infoLog的输出会定向到ioutil.Discard，即不打印该日志
 	if ErrorLevel < level {
 		errorLog.SetOutput(ioutil.Discard)
 	}
