@@ -21,8 +21,8 @@ import (
 第一步：创建2个日志实例，分别用于打印Info和Error日志
 */
 var (
-	errorLog = log.New(os.Stdout, "\\033[31m[error]\\033[0m", log.LstdFlags|log.Lshortfile)
-	infoLog  = log.New(os.Stdout, "\\033[34m[info ]\\033[0m", log.LstdFlags|log.Lshortfile)
+	errorLog = log.New(os.Stdout, "\033[31m[error]\033[0m ", log.LstdFlags|log.Lshortfile)
+	infoLog  = log.New(os.Stdout, "\033[34m[info]\033[0m ", log.LstdFlags|log.Lshortfile)
 	loggers  = []*log.Logger{errorLog, infoLog}
 	mu       sync.Mutex
 )
