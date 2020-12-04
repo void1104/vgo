@@ -21,4 +21,5 @@ func TestSession_CreateTable(t *testing.T) {
 	if !s.HasTable() {
 		t.Fatal("Failed to create table User")
 	}
+
 }
