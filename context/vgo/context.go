@@ -1,6 +1,7 @@
 package vgo
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -61,5 +62,23 @@ func (c *Context) String(code int, format string, values ...interface{}) {
 
 // 返回JSON格式数据
 func (c *Context) JSON(code int, obj interface{}) {
+	c.SetHeader("Content-Type", "application/json")
+	c.SetStatus(code)
+	encoder := json.NewEncoder(c.RW)
+	if err := encoder.Encode(obj); err != nil {
+		http.Error(c.RW, err.Error(), 500)
+	}
+}
 
+// 返回字节格式数据
+func (c *Context) Data(code int, data []byte) {
+	c.SetStatus(code)
+	c.RW.Write(data)
+}
+
+// 返回HTML模板
+func (c *Context) HTML(code int, html string) {
+	c.SetHeader("Content-Type", "text/html")
+	c.SetStatus(code)
+	c.RW.Write([]byte(html))
 }
