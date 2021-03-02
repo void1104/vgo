@@ -11,11 +11,11 @@ type node struct {
 	pattern  string  // 待匹配路由，例如/p/:lang
 	part     string  // 路由中的一部分，例如:lang
 	children []*node // 子节点，例如[doc, tutorial, intro]
-	isWild   bool    // 是否精确匹配
+	isWild   bool    // 是否模糊匹配
 }
 
 // 第一个匹配成功的节点，用于插入
-func (n *node) matchChild(part string) *node {
+func (n *node) matchFirstChild(part string) *node {
 	for _, child := range n.children {
 		if child.part == part || child.isWild {
 			return child
@@ -37,11 +37,21 @@ func (n *node) matchChildren(part string) []*node {
 
 /**
 注册路由规则，映射handler
- */
+*/
 func (n *node) insert(pattern string, parts []string, height int) {
+	// 到路由的最后一级，将当前节点的路由匹配设置为传入pattern
 	if len(parts) == height {
 		n.pattern = pattern
 		return
 	}
 
+	part := parts[height]
+	//  匹配当前part的子节点
+	child := n.matchFirstChild(part)
+	// 如果没有匹配到当前part的节点，则新建一个
+	if child == nil {
+		child = &node{part: part, isWild: part[0] == ':' || part[0] == '*'}
+		n.children = append(n.children, child)
+	}
+	child.insert(pattern, parts, height+1)
 }
