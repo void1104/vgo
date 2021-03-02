@@ -66,7 +66,10 @@ func (c *Context) JSON(code int, obj interface{}) {
 	c.SetStatus(code)
 	encoder := json.NewEncoder(c.RW)
 	if err := encoder.Encode(obj); err != nil {
-		http.Error(c.RW, err.Error(), 500)
+		// 当err != nil时，http.Error()不会起作用，因为在WriteHeader()后调用Header().Set()是不会生效的
+		//http.Error(c.RW, err.Error(), 500)
+		// Gin实现是直接panic
+		panic(err)
 	}
 }
 
