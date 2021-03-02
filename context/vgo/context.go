@@ -26,8 +26,8 @@ type Context struct {
 
 func newContext(rw http.ResponseWriter, req *http.Request) *Context {
 	return &Context{
-		RW:     rw,
-		Req:    req,
+		RW:  rw,
+		Req: req,
 	}
 }
 
@@ -60,8 +60,6 @@ func (c *Context) String(code int, format string, values ...interface{}) {
 }
 
 // 返回JSON格式数据
-func (c *Context) JSON(code int, obj interface[])  {
+func (c *Context) JSON(code int, obj interface{}) {
 
 }
-
-
