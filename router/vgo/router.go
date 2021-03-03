@@ -23,27 +23,31 @@ func newRouter() *router {
 }
 
 /**
-Only one * is allowed
+将路由切分，只有一个*的路由也是允许的
 */
-func parsePattern(pattern string) []string {
+func parsePattern(pattern string) (parts []string) {
 	vs := strings.Split(pattern, "/")
-
-	parts := make([]string, 0)
+	parts = make([]string, 0)
 	for _, item := range vs {
 		if item != "" {
 			parts = append(parts, item)
+			// 如果以*开头，则不需在意后续路由，*表示全量匹配
 			if item[0] == '*' {
 				break
 			}
 		}
 	}
-	return parts
+	return
 }
 
+/**
+添加路由
+*/
 func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
 	parts := parsePattern(pattern)
 
 	key := method + "-" + pattern
+	// 每个HTTP方法，有各自的Trie树
 	_, ok := r.roots[method]
 	if !ok {
 		r.roots[method] = &node{}
@@ -79,6 +83,9 @@ func (r *router) getRoute(method string, path string) (*node, map[string]string)
 	return nil, nil
 }
 
+/**
+请求入口处理函数
+*/
 func (r *router) handle(c *Context) {
 	n, params := r.getRoute(c.Req.Method, c.Req.URL.Path)
 	if n != nil {

@@ -18,6 +18,7 @@ type node struct {
 
 // 第一个匹配成功的节点，用于插入
 func (n *node) matchFirstChild(part string) *node {
+	// 遍历所有子节点，如果匹配成功或者子节点为模糊匹配，返回子节点
 	for _, child := range n.children {
 		if child.part == part || child.isWild {
 			return child
@@ -41,7 +42,7 @@ func (n *node) matchChildren(part string) []*node {
 注册路由规则，映射handler
 */
 func (n *node) insert(pattern string, parts []string, height int) {
-	// 到路由的最后一级，将当前节点的路由匹配设置为传入pattern
+	// 到传入路由的最后一级，将当前节点的路由匹配设置为传入pattern
 	if len(parts) == height {
 		n.pattern = pattern
 		return
