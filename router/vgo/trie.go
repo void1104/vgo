@@ -56,6 +56,9 @@ func (n *node) insert(pattern string, parts []string, height int) {
 		child = &node{part: part, isWild: part[0] == ':' || part[0] == '*'}
 		n.children = append(n.children, child)
 	}
+
+	// 检查是否路由冲突，冲突了则panic
+
 	child.insert(pattern, parts, height+1)
 }
 
@@ -72,7 +75,7 @@ func (n *node) search(parts []string, height int) *node {
 
 	part := parts[height]
 	children := n.matchChildren(part)
-	// 如果出现/hello/:lang/h1 和 /hello/h2/h1 ？会发生什么？
+
 	for _, child := range children {
 		result := child.search(parts, height+1)
 		if result != nil {

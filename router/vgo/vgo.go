@@ -40,6 +40,8 @@ func (engine *Engine) Run(addr string) (err error) {
 
 /**
 实现Serve接口，接管所有的HTTP请求
+- HTTP请求是并发的，但每个请求都会调用ServeHTTP，这个方法中，
+  每次都会创建新的context，不会对同一个context进行写入。
 */
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	c := newContext(w, req)
