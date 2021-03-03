@@ -1,5 +1,7 @@
 package vgo
 
+import "strings"
+
 /**
 Trie树实现动态路由
 	- 参数匹配：例如 /p/:lang/doc, 可以匹配/p/c/doc/和/p/go/doc
@@ -54,4 +56,27 @@ func (n *node) insert(pattern string, parts []string, height int) {
 		n.children = append(n.children, child)
 	}
 	child.insert(pattern, parts, height+1)
+}
+
+/**
+匹配路由规则，查找到对应的handler
+*/
+func (n *node) search(parts []string, height int) *node {
+	if len(parts) == height || strings.HasPrefix(n.part, "*") {
+		if n.pattern == "" {
+			return nil
+		}
+		return n
+	}
+
+	part := parts[height]
+	children := n.matchChildren(part)
+
+	for _, child := range children {
+		result := child.search(parts, height+1)
+		if result != nil {
+			return result
+		}
+	}
+	return nil
 }
