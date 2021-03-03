@@ -60,7 +60,7 @@ func (n *node) insert(pattern string, parts []string, height int) {
 }
 
 /**
-匹配路由规则，查找到对应的handler
+匹配路由规则
 */
 func (n *node) search(parts []string, height int) *node {
 	if len(parts) == height || strings.HasPrefix(n.part, "*") {
@@ -72,7 +72,7 @@ func (n *node) search(parts []string, height int) *node {
 
 	part := parts[height]
 	children := n.matchChildren(part)
-
+	// 如果出现/hello/:lang/h1 和 /hello/h2/h1 ？会发生什么？
 	for _, child := range children {
 		result := child.search(parts, height+1)
 		if result != nil {

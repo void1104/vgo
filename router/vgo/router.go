@@ -49,6 +49,7 @@ func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
 	key := method + "-" + pattern
 	// 每个HTTP方法，有各自的Trie树
 	_, ok := r.roots[method]
+	// 如果当前HTTP方法不存在路由，则创建根节点
 	if !ok {
 		r.roots[method] = &node{}
 	}
@@ -56,20 +57,23 @@ func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
 	r.handlers[key] = handler
 }
 
-func (r *router) getRoute(method string, path string) (*node, map[string]string) {
+/**
+路由匹配
+*/
+func (r *router) getRoute(method string, path string) (n *node, params map[string]string) {
 	searchParts := parsePattern(path)
-	params := make(map[string]string)
+	params = make(map[string]string)
+	// 根据HTTP方法找到对应的路由
 	root, ok := r.roots[method]
-
 	if !ok {
 		return nil, nil
 	}
 
-	n := root.search(searchParts, 0)
-
+	n = root.search(searchParts, 0)
 	if n != nil {
 		parts := parsePattern(n.pattern)
 		for index, part := range parts {
+			// 如果为模糊匹配的路由，则将截取的路由存入上下文中，方便后续获得
 			if part[0] == ':' {
 				params[part[1:]] = searchParts[index]
 			}
@@ -87,6 +91,7 @@ func (r *router) getRoute(method string, path string) (*node, map[string]string)
 请求入口处理函数
 */
 func (r *router) handle(c *Context) {
+	// 确定路由匹配后，调用响应的handlerFunc执行
 	n, params := r.getRoute(c.Req.Method, c.Req.URL.Path)
 	if n != nil {
 		c.Params = params
