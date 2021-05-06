@@ -2,6 +2,7 @@ package router
 
 import (
 	"log"
+	"net/http"
 	"vgo/context"
 )
 
@@ -14,7 +15,7 @@ func newRouter() *Router {
 	return &Router{handlers: make(map[string]HandlerFunc)}
 }
 
-// AddRoute 静态路由添加函数
+// AddRoute 静态路由(hash实现)添加函数
 func (r *Router) AddRoute(method string, pattern string, handler HandlerFunc) {
 	log.Printf("Route %4s - %s", method, pattern)
 	key := method + "-" + pattern
@@ -23,5 +24,11 @@ func (r *Router) AddRoute(method string, pattern string, handler HandlerFunc) {
 
 // handle
 func (r *Router) handle(c *context.Context) {
-
+	key := c.Method + "-" + c.Path
+	if handler, ok := r.handlers[key]; ok {
+		handler(c)
+	} else {
+		c.Status(404)
+		c.String(http.StatusNotFound, "404 NOT FOUND: %s\n", c.Path)
+	}
 }

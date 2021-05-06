@@ -30,8 +30,8 @@ type Context struct {
 	StatusCode int
 }
 
-// context的构造函数
-func newContext(w http.ResponseWriter, req *http.Request) *Context {
+// NewContext context的构造函数
+func NewContext(w http.ResponseWriter, req *http.Request) *Context {
 	return &Context{
 		Writer: w,
 		Req:    req,
