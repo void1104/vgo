@@ -31,7 +31,7 @@ func (n *node) matchChildren(part string) []*node {
 	return nodes
 }
 
-// insert 插入节点 TODO 路由冲突时，将问题暴露给用户
+// insert 插入节点
 func (n *node) insert(pattern string, parts []string, height int) {
 	// 如果走到叶子节点，并且路由也走到最后的分隔符，则把当前节点路径注册为路由
 	if len(parts) == height {

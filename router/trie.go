@@ -1,9 +1,11 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"vgo/context"
+	"vgo/utils"
 )
 
 /**
@@ -12,17 +14,18 @@ import (
 	- 通配*：例如/static/*filepath, 可匹配/static/fav.ico, /static/js/Query.js
 */
 
-// trieRouter
+// Router
 //	- roots key eg, roots['GET'], roots['POST']
 //  - handlers key eg, handlers['GET-/p/:lang/doc'], handlers['POST-/p/book']
-type trieRouter struct {
+type Router struct {
 	roots    map[string]*node       // 存储每种请求方式的Trie树根节点
 	handlers map[string]HandlerFunc // 存储每种请求方式的HandlerFunc
+	table    utils.Set              // 存储所有注册过的路由
 }
 
 // newTrieRouter 前缀树路由构造函数
-func newTrieRouter() *trieRouter {
-	return &trieRouter{
+func newRouter() *Router {
+	return &Router{
 		roots:    make(map[string]*node),
 		handlers: make(map[string]HandlerFunc),
 	}
@@ -45,13 +48,18 @@ func parsePattern(pattern string) []string {
 }
 
 // addRoute 注册路由
-func (r *trieRouter) addRoute(method string, pattern string, handler HandlerFunc) {
+func (r *Router) addRoute(method string, pattern string, handler HandlerFunc) {
 	parts := parsePattern(pattern)
 
 	key := method + "-" + pattern
-	_, ok := r.roots[method]
-	if !ok {
+
+	// 判断请求方式是否已注册过路由
+	if _, ok := r.roots[method]; !ok {
 		r.roots[method] = &node{}
+	}
+	// 判断路由是否已存在, 存在则panic，将问题暴露给用户
+	if r.table.Exist(pattern) {
+		panic(fmt.Sprintf("router conflict %s", pattern))
 	}
 
 	r.roots[method].insert(pattern, parts, 0)
@@ -59,7 +67,7 @@ func (r *trieRouter) addRoute(method string, pattern string, handler HandlerFunc
 }
 
 // getRoute 路由匹配
-func (r *trieRouter) getRoute(method string, path string) (*node, map[string]string) {
+func (r *Router) getRoute(method string, path string) (*node, map[string]string) {
 	searchParts := parsePattern(path)
 	params := make(map[string]string)
 
@@ -88,7 +96,7 @@ func (r *trieRouter) getRoute(method string, path string) (*node, map[string]str
 	return nil, nil
 }
 
-func (r *trieRouter) handle(c *context.Context) {
+func (r *Router) handle(c *context.Context) {
 	n, params := r.getRoute(c.Method, c.Path)
 	if n != nil {
 		// 在调用匹配到的handler前，将解析出来的路由参数赋值给了c.Params.
