@@ -10,12 +10,12 @@ type HandlerFunc func(ctx *context.Context)
 
 // Engine 实现了ServeHTTP方法，实现Handler接口
 type Engine struct {
-	router *Router
+	router *HashRouter
 }
 
 // New 引擎的构造方法
 func New() *Engine {
-	return &Engine{router: newRouter()}
+	return &Engine{router: newHashRouter()}
 }
 
 // addRoute 路由添加方法，调用router模块的方法
