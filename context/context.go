@@ -4,15 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"vgo/router"
 )
 
 /**
-	1. 对Web服务来说，无非是根据请求*http.Request，构造响应http.ReponseWriter.
-但是这两个对象提供的接口粒度太细，比如需要构造一个完整的响应，需要考虑消息头（Header）和消息体（Body）,
-而Header包含了状态码（StatusCode）,消息类型（ContentType）等几乎每次请求都需要设置的信息。
-因此，如果不进行有效的封装，那么框架的用户奖需要写大量重复，繁杂的代码，而且容易出错。
-针对常用场景，能够高效地构造出HTTP响应是一个好的框架必须考虑地点。
-	2. 对request和response的封装，只是设计Context的原因之一。对于框架来说，还需要支撑额外的功能，
+对request和response的封装，只是设计Context的原因之一。对于框架来说，还需要支撑额外的功能，
 例如保存中间件产生的信息。Context随着每一个请求的出现而产生，请求的结束而销毁，和当前请求强相关的信息都应由
 Context承载。因此，设计Context结构，扩展性和复杂性留在了内部，而对外简化了接口。
 */
@@ -29,6 +25,9 @@ type Context struct {
 	Params map[string]string
 	// response info
 	StatusCode int
+	// middleware
+	Handlers []router.HandlerFunc
+	index    int
 }
 
 // NewContext context的构造函数
@@ -38,6 +37,15 @@ func NewContext(w http.ResponseWriter, req *http.Request) *Context {
 		Req:    req,
 		Path:   req.URL.Path,
 		Method: req.Method,
+		index:  -1,
+	}
+}
+
+func (c *Context) Next() {
+	c.index++
+	s := len(c.Handlers)
+	for ; c.index < s; c.index++ {
+		c.Handlers[c.index](c)
 	}
 }
 

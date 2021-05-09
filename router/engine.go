@@ -2,20 +2,26 @@ package router
 
 import (
 	"net/http"
+	"strings"
 	"vgo/context"
 )
 
 // HandlerFunc 定义vgo对于请求的handler
 type HandlerFunc func(ctx *context.Context)
 
-// Engine 实现了ServeHTTP方法，实现Handler接口
+// Engine 实现ServeHTTP方法 -> 实现Handler接口
 type Engine struct {
-	router *Router
+	*GroupRouter // Engine继承了GroupRouter的所有属性和方法，所以*(Engine).engine是指向自己的，将Engine作为最顶层的分组，也就是说Engine拥有Router的所有能力
+	router       *Router
+	groups       []*GroupRouter
 }
 
 // New 引擎的构造方法
-func New() *Engine {
-	return &Engine{router: newRouter()}
+func New() (engine *Engine) {
+	engine = &Engine{router: newRouter()}
+	engine.GroupRouter = &GroupRouter{engine: engine}
+	engine.groups = []*GroupRouter{engine.GroupRouter}
+	return
 }
 
 // addRoute 路由添加方法，调用router模块的方法
@@ -23,12 +29,10 @@ func (engine *Engine) addRoute(method string, pattern string, handler HandlerFun
 	engine.router.addRoute(method, pattern, handler)
 }
 
-// GET 定义GET方法的请求
 func (engine *Engine) GET(pattern string, handler HandlerFunc) {
 	engine.addRoute("GET", pattern, handler)
 }
 
-// POST 定义POST方法的请求
 func (engine *Engine) POST(pattern string, handler HandlerFunc) {
 	engine.addRoute("POST", pattern, handler)
 }
@@ -39,8 +43,17 @@ func (engine *Engine) Run(addr string) (err error) {
 }
 
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	// 1. 将req和resp封装为context， 每一次请求都会生成新的context TODO 为请求做缓存
+	var middlewares []HandlerFunc
+	for _, group := range engine.groups {
+		if strings.HasPrefix(req.URL.Path, group.prefix) {
+			middlewares = append(middlewares, group.middlewares...)
+		}
+	}
+	// 1. 每一次请求都会生成新的context TODO 为请求做缓存
 	c := context.NewContext(w, req)
+
+	c.Handlers = middlewares
+
 	// 2. 交由router的handle函数处理请求
 	engine.router.handle(c)
 }
