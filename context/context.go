@@ -100,6 +100,13 @@ func (c *Context) HTML(code int, html string) {
 	c.Writer.Write([]byte(html))
 }
 
+// Fail 返回失败状态
+func (c *Context) Fail() {
+	c.SetHeader("Content-Type", "text/plain")
+	c.Status(500)
+	c.Writer.Write([]byte("Internal Server Error"))
+}
+
 func (c *Context) Param(key string) string {
 	value, _ := c.Params[key]
 	return value
