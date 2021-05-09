@@ -9,7 +9,7 @@ func Logger() router.HandlerFunc {
 	//	// Process request
 	//	c.Next()
 	//	// Calculate resolution time
-	//	log.Printf("[%d] %s ")
+	//	logs.Printf("[%d] %s ")
 	//}
 	return nil
 }
