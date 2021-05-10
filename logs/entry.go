@@ -7,27 +7,6 @@ import (
 	"vgo/context"
 )
 
-//var (
-//	// qualified package name, cached at first use
-//	logPackage string
-//
-//	// Positions in the call stack when tracing to report the calling method
-//	minimumCallerDepth int
-//
-//	// Used for caller information initialisation
-//	callerInitOnce sync.Once
-//)
-
-//const (
-//	maximumCallerDepth int = 25
-//	knownLogFrames     int = 4
-//)
-
-//func init() {
-//	// start at the bottom of the stack befor the package-name cache is primed
-//	minimumCallerDepth = 1
-//}
-
 type Entry struct {
 	Logger *Logger
 
@@ -36,9 +15,6 @@ type Entry struct {
 
 	// Level the log entry level
 	Level Level
-
-	// Caller method, with package name
-	//Caller *runtime.Frame
 
 	// Message passed to Trace, Debug, Info, Warn, Error, Fatal or Panic
 	Message string
@@ -68,17 +44,24 @@ func (entry *Entry) log(level Level, msg string) {
 }
 
 func (entry *Entry) write() {
-	// TODO 日志内容修改
-	log := time.Now().String() + "hello 日志测试"
+
+	log := entry.formatter()
 
 	entry.Logger.mu.Lock()
 	defer entry.Logger.mu.Unlock()
 	// TODO 日志文件输入路径
-	if _, err := entry.Logger.Out.Write([]byte(log)); err != nil {
+	if _, err := entry.Logger.Out.Write(log); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to write to log, #{err}\n")
 	}
 }
 
 func (entry *Entry) Log(level Level, args ...interface{}) {
 	entry.log(level, fmt.Sprint(args...))
+}
+
+func (entry *Entry) formatter() []byte {
+	timestamp := "[" + entry.Time.Format("2006-01-02 15:03:04") + "]"
+	level := "[" + entry.Level.String() + "] "
+	msg := entry.Message
+	return []byte(timestamp + level + msg)
 }
