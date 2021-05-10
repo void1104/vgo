@@ -5,10 +5,6 @@ var (
 	std = New()
 )
 
-func StandardLogger() *Logger {
-	return std
-}
-
 // Trace logs a message at level Trace on the standard logger.
 func Trace(args ...interface{}) {
 	std.Trace(args...)
@@ -38,4 +34,3 @@ func Error(args ...interface{}) {
 func Panic(args ...interface{}) {
 	std.Panic(args...)
 }
-

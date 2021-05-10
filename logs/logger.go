@@ -4,10 +4,7 @@ import (
 	"io"
 	"os"
 	"sync"
-	"sync/atomic"
 )
-
-type LogFunction func() []interface{}
 
 type Logger struct {
 	// 一般将日志输出到一个文件，也可以输出到Kafka
@@ -59,7 +56,7 @@ func New() *Logger {
 }
 
 func (logger *Logger) newEntry() *Entry {
-	// TODO entryPool在这里的作用？
+	// 这里使用池来缓存对象，避免项目大量重复地创建许多对象。
 	entry, ok := logger.entryPool.Get().(*Entry)
 	if ok {
 		return entry
@@ -71,21 +68,10 @@ func (logger *Logger) releaseEntry(entry *Entry) {
 	logger.entryPool.Put(entry)
 }
 
-func (logger *Logger) level() Level {
-	return Level(atomic.LoadUint32((*uint32)(&logger.Level)))
-}
-
-// IsLevelEnabled checks if the log level of the logger is greater than the level
-func (logger *Logger) IsLevelEnabled(level Level) bool {
-	return logger.level() >= level
-}
-
 func (logger *Logger) Log(level Level, args ...interface{}) {
-	if logger.IsLevelEnabled(level) {
-		entry := logger.newEntry()
-		entry.Log(level, args...)
-		logger.releaseEntry(entry)
-	}
+	entry := logger.newEntry()
+	entry.Log(level, args...)
+	logger.releaseEntry(entry)
 }
 
 func (logger *Logger) Trace(args ...interface{}) {

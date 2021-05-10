@@ -1,34 +1,32 @@
 package logs
 
 import (
-	"bytes"
 	"fmt"
 	"os"
-	"sync"
 	"time"
 	"vgo/context"
 )
 
-var (
-	// qualified package name, cached at first use
-	logPackage string
+//var (
+//	// qualified package name, cached at first use
+//	logPackage string
+//
+//	// Positions in the call stack when tracing to report the calling method
+//	minimumCallerDepth int
+//
+//	// Used for caller information initialisation
+//	callerInitOnce sync.Once
+//)
 
-	// Positions in the call stack when tracing to report the calling method
-	minimumCallerDepth int
+//const (
+//	maximumCallerDepth int = 25
+//	knownLogFrames     int = 4
+//)
 
-	// Used for caller information initialisation
-	callerInitOnce sync.Once
-)
-
-const (
-	maximumCallerDepth int = 25
-	knownLogFrames     int = 4
-)
-
-func init() {
-	// start at the bottom of the stack befor the package-name cache is primed
-	minimumCallerDepth = 1
-}
+//func init() {
+//	// start at the bottom of the stack befor the package-name cache is primed
+//	minimumCallerDepth = 1
+//}
 
 type Entry struct {
 	Logger *Logger
@@ -45,9 +43,6 @@ type Entry struct {
 	// Message passed to Trace, Debug, Info, Warn, Error, Fatal or Panic
 	Message string
 
-	// When formatter is called in entry.log(), a Buffer may be set to entry
-	Buffer *bytes.Buffer
-
 	// Contains the context set by the user. Useful for hook processing etc.
 	Context context.Context
 
@@ -61,41 +56,15 @@ func NewEntry(logger *Logger) *Entry {
 	}
 }
 
-// Dup TODO 为何拷贝dup一个新的entry：这里的mutex会生成新的mutex
-func (entry *Entry) Dup() *Entry {
-	return &Entry{
-		Logger:  entry.Logger,
-		Time:    entry.Time,
-		Context: entry.Context,
-		err:     entry.err,
-	}
-}
-
 func (entry *Entry) log(level Level, msg string) {
-	var buffer *bytes.Buffer
 
-	newEntry := entry.Dup()
-
-	if newEntry.Time.IsZero() {
-		newEntry.Time = time.Now()
+	if entry.Time.IsZero() {
+		entry.Time = time.Now()
 	}
+	entry.Level = level
+	entry.Message = msg
 
-	newEntry.Level = level
-	newEntry.Message = msg
-
-	// TODO 数据池在这里的作用？
-	buffer = getBuffer()
-	defer func() {
-		newEntry.Buffer = nil
-		putBuffer(buffer)
-	}()
-	buffer.Reset()
-	newEntry.Buffer = buffer
-
-	newEntry.write()
-
-	newEntry.Buffer = nil
-
+	entry.write()
 }
 
 func (entry *Entry) write() {
@@ -111,7 +80,5 @@ func (entry *Entry) write() {
 }
 
 func (entry *Entry) Log(level Level, args ...interface{}) {
-	if entry.Logger.IsLevelEnabled(level) {
-		entry.log(level, fmt.Sprint(args...))
-	}
+	entry.log(level, fmt.Sprint(args...))
 }

@@ -5,17 +5,6 @@ import (
 	"strings"
 )
 
-// AllLevels A constant exposing all logging levels
-var AllLevels = []Level{
-	PanicLevel,
-	FatalLevel,
-	ErrorLevel,
-	WarnLevel,
-	InfoLevel,
-	DebugLevel,
-	TraceLevel,
-}
-
 // 各日志级别
 const (
 	PanicLevel Level = iota
@@ -27,15 +16,27 @@ const (
 	TraceLevel
 )
 
-// Fields type, used to pass to `WithFields`.
-type Fields map[string]interface{}
-
 // Level type
 type Level uint32
 
 // Convert the Level to a string. E.g. PanicLevel becomes "panic".
 func (level Level) String() string {
-	//if b, err := level
+	switch level {
+	case TraceLevel:
+		return "trace"
+	case DebugLevel:
+		return "debug"
+	case InfoLevel:
+		return "info"
+	case WarnLevel:
+		return "warning"
+	case ErrorLevel:
+		return "error"
+	case FatalLevel:
+		return "fatal"
+	case PanicLevel:
+		return "panic"
+	}
 	return "unknown"
 }
 
@@ -60,56 +61,4 @@ func ParseLevel(lvl string) (Level, error) {
 
 	var l Level
 	return l, fmt.Errorf("not a valid logrus Level: %q", lvl)
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler
-func (level *Level) UnmarshalText(text []byte) error {
-	l, err := ParseLevel(string(text))
-	if err != nil {
-		return err
-	}
-
-	*level = l
-	return nil
-}
-
-func (level Level) MarshalText() ([]byte, error) {
-	switch level {
-	case TraceLevel:
-		return []byte("trace"), nil
-	case DebugLevel:
-		return []byte("debug"), nil
-	case InfoLevel:
-		return []byte("info"), nil
-	case WarnLevel:
-		return []byte("warning"), nil
-	case ErrorLevel:
-		return []byte("error"), nil
-	case FatalLevel:
-		return []byte("fatal"), nil
-	case PanicLevel:
-		return []byte("panic"), nil
-	}
-	return nil, fmt.Errorf("not a valid log level #{level}")
-}
-
-// StdLogger 标准日志库接口
-type StdLogger interface {
-	Print(...interface{})
-	Printf(string, ...interface{})
-	Println(...interface{})
-
-	Fatalf(string, ...interface{})
-	Fatalln(...interface{})
-
-	Panicf(string, ...interface{})
-	Panicln(...interface{})
-
-	Trace(args ...interface{})
-	Debug(args ...interface{})
-	Info(args ...interface{})
-	Warning(args ...interface{})
-	Error(args ...interface{})
-	Fatal(args ...interface{})
-	Panic(args ...interface{})
 }
