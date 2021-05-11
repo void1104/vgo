@@ -106,6 +106,13 @@ func (c *Context) Fail() {
 	c.Writer.Write([]byte("Internal Server Error"))
 }
 
+// AuthFail 返回鉴权失败状态
+func (c *Context) AuthFail() {
+	c.SetHeader("Content-Type", "text/plain")
+	c.Status(403)
+	c.Writer.Write([]byte("Forbidden, Auth Fail"))
+}
+
 func (c *Context) Param(key string) string {
 	value, _ := c.Params[key]
 	return value

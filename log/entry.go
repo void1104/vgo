@@ -60,8 +60,8 @@ func (entry *Entry) Log(level Level, args ...interface{}) {
 }
 
 func (entry *Entry) formatter() []byte {
-	timestamp := "[" + entry.Time.Format("2006-01-02 15:03:04") + "]"
+	timestamp := "[" + time.Now().Format("2006-01-02 15:04:05") + "]"
 	level := "[" + entry.Level.String() + "] "
 	msg := entry.Message
-	return []byte(timestamp + level + msg)
+	return []byte(timestamp + level + msg + "\n")
 }

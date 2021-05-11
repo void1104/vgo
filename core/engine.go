@@ -20,6 +20,8 @@ type Engine struct {
 func New() (engine *Engine) {
 	engine = &Engine{router: newRouter()}
 	engine.GroupRouter = &GroupRouter{engine: engine}
+	// 初始化插入错误恢复中间件 TODO 优化
+	engine.GroupRouter.middlewares = append(engine.GroupRouter.middlewares, Recovery())
 	engine.groups = []*GroupRouter{engine.GroupRouter}
 	return
 }

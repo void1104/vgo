@@ -1,15 +1,14 @@
-package main
+package core
 
 import (
 	"fmt"
 	"log"
 	"runtime"
 	"strings"
-	"vgo/core"
 )
 
-func Recovery() core.HandlerFunc {
-	return func(c *core.Context) {
+func Recovery() HandlerFunc {
+	return func(c *Context) {
 		defer func() {
 			if err := recover(); err != nil {
 				message := fmt.Sprintf("%s", err)

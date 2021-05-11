@@ -20,6 +20,7 @@ func newTestRouter() *Router {
 	return r
 }
 
+// TestParsePattern 测试解析路由
 func TestParsePattern(t *testing.T) {
 	ok := reflect.DeepEqual(parsePattern("/p/:name"), []string{"p", ":name"})
 	ok = ok && reflect.DeepEqual(parsePattern("/p/*"), []string{"p", "*"})
@@ -29,6 +30,7 @@ func TestParsePattern(t *testing.T) {
 	}
 }
 
+// TestGetRoute 测试获取路由
 func TestGetRoute(t *testing.T) {
 	r := newTestRouter()
 	n, ps := r.getRoute("GET", "/hello/vgo")
@@ -48,6 +50,7 @@ func TestGetRoute(t *testing.T) {
 	fmt.Printf("路由匹配 : %s, params['name']: %s\n", n.pattern, ps["name"])
 }
 
+// TestGetRoute2 测试获取路由
 func TestGetRoute2(t *testing.T) {
 	r := newTestRouter()
 	n1, ps1 := r.getRoute("GET", "/assets/file1.txt/")
@@ -55,4 +58,11 @@ func TestGetRoute2(t *testing.T) {
 	if !ok1 {
 		t.Fatal("路由应该为 /assets/*filepath & filepath should be css/test.css")
 	}
+}
+
+// TestRouteConflict 测试路由冲突
+func TestRouteConflict(t *testing.T) {
+	r := newTestRouter()
+	r.addRoute("GET", "/conflict", nil)
+	r.addRoute("GET", "/conflict", nil)
 }

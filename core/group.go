@@ -17,12 +17,13 @@ type GroupRouter struct {
 
 // Group 创建一个新的路由分组，记住所有分组共享一个Engine
 func (group *GroupRouter) Group(prefix string) (gr *GroupRouter) {
+	engine := group.engine
 	gr = &GroupRouter{
 		prefix: group.prefix + prefix,
 		parent: group,
 		engine: group.engine,
 	}
-
+	engine.groups = append(engine.groups, gr)
 	return
 }
 
