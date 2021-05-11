@@ -1,16 +1,15 @@
-package vgo
+package main
 
 import (
 	"fmt"
 	"log"
 	"runtime"
 	"strings"
-	"vgo/context"
-	"vgo/router"
+	"vgo/core"
 )
 
-func Recovery() router.HandlerFunc {
-	return func(c *context.Context) {
+func Recovery() core.HandlerFunc {
+	return func(c *core.Context) {
 		defer func() {
 			if err := recover(); err != nil {
 				message := fmt.Sprintf("%s", err)

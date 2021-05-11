@@ -1,8 +1,8 @@
-package logs
+package log
 
 var (
 	// std is the name of the standard logger in stdlib `log`
-	std = New()
+	std = NewLogger()
 )
 
 // Trace logs a message at level Trace on the standard logger.

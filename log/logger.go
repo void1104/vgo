@@ -1,10 +1,25 @@
-package logs
+package log
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"strings"
 	"sync"
 )
+// 各日志级别
+const (
+	PanicLevel Level = iota
+	FatalLevel
+	ErrorLevel
+	WarnLevel
+	InfoLevel
+	DebugLevel
+	TraceLevel
+)
+
+// Level type
+type Level uint32
 
 type Logger struct {
 	// 一般将日志输出到一个文件，也可以输出到Kafka
@@ -45,8 +60,8 @@ func (mw *MutexWrap) Disable() {
 
 type exitFunc func(int)
 
-// New 建议创建一个全局实例log，也可以自定义通过 &logs.Logger{}自定义生成日志对象
-func New() *Logger {
+// NewLogger 建议创建一个全局实例log，也可以自定义通过 &logs.Logger{}自定义生成日志对象
+func NewLogger() *Logger {
 	return &Logger{
 		Out:          os.Stderr,
 		Level:        InfoLevel,
@@ -96,4 +111,48 @@ func (logger *Logger) Error(args ...interface{}) {
 
 func (logger *Logger) Panic(args ...interface{}) {
 	logger.Log(PanicLevel, args...)
+}
+
+// Convert the Level to a string. E.g. PanicLevel becomes "panic".
+func (level Level) String() string {
+	switch level {
+	case TraceLevel:
+		return "trace"
+	case DebugLevel:
+		return "debug"
+	case InfoLevel:
+		return "info"
+	case WarnLevel:
+		return "warning"
+	case ErrorLevel:
+		return "error"
+	case FatalLevel:
+		return "fatal"
+	case PanicLevel:
+		return "panic"
+	}
+	return "unknown"
+}
+
+// ParseLevel takes a string level and returns the log level constant.
+func ParseLevel(lvl string) (Level, error) {
+	switch strings.ToLower(lvl) {
+	case "panic":
+		return PanicLevel, nil
+	case "fatal":
+		return FatalLevel, nil
+	case "error":
+		return ErrorLevel, nil
+	case "warn", "warning":
+		return WarnLevel, nil
+	case "info":
+		return InfoLevel, nil
+	case "debug":
+		return DebugLevel, nil
+	case "trace":
+		return TraceLevel, nil
+	}
+
+	var l Level
+	return l, fmt.Errorf("not a valid logrus Level: %q", lvl)
 }

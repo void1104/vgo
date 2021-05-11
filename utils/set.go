@@ -8,6 +8,13 @@ type Set struct {
 	m map[string]Empty
 }
 
+// NewSet 构造函数
+func NewSet() *Set {
+	return &Set{
+		m: make(map[string]Empty),
+	}
+}
+
 // Add 添加元素
 func (s *Set) Add(key string) {
 	s.m[key] = empty
@@ -32,4 +39,14 @@ func (s *Set) Travel() (keys []string) {
 		keys = append(keys, key)
 	}
 	return
+}
+
+// Size 获取set元素个数
+func (s *Set) Size() int {
+	return len(s.m)
+}
+
+// IsNull 判断set是否已初始化
+func (s *Set) IsNull() bool {
+	return s.m == nil
 }

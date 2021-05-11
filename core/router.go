@@ -1,10 +1,9 @@
-package router
+package core
 
 import (
 	"fmt"
 	"net/http"
 	"strings"
-	"vgo/context"
 	"vgo/utils"
 )
 
@@ -20,7 +19,7 @@ import (
 type Router struct {
 	roots    map[string]*node       // 存储每种请求方式的Trie树根节点
 	handlers map[string]HandlerFunc // 存储每种请求方式的HandlerFunc
-	table    utils.Set              // 存储所有注册过的路由
+	table    *utils.Set             // 存储所有注册过的路由
 }
 
 // newTrieRouter 前缀树路由构造函数
@@ -28,6 +27,7 @@ func newRouter() *Router {
 	return &Router{
 		roots:    make(map[string]*node),
 		handlers: make(map[string]HandlerFunc),
+		table:    utils.NewSet(),
 	}
 }
 
@@ -57,9 +57,12 @@ func (r *Router) addRoute(method string, pattern string, handler HandlerFunc) {
 	if _, ok := r.roots[method]; !ok {
 		r.roots[method] = &node{}
 	}
+
 	// 判断路由是否已存在, 存在则panic，将问题暴露给用户
-	if r.table.Exist(pattern) {
+	if r.table.Exist(key) {
 		panic(fmt.Sprintf("router conflict %s", pattern))
+	} else {
+		r.table.Add(key)
 	}
 
 	r.roots[method].insert(pattern, parts, 0)
@@ -96,7 +99,7 @@ func (r *Router) getRoute(method string, path string) (*node, map[string]string)
 	return nil, nil
 }
 
-func (r *Router) handle(c *context.Context) {
+func (r *Router) handle(c *Context) {
 	n, params := r.getRoute(c.Method, c.Path)
 	if n != nil {
 		// 在调用匹配到的handler前，将解析出来的路由参数赋值给了c.Params，这样就能够在handler中，通过Context对象访问到具体的值了。
@@ -104,10 +107,10 @@ func (r *Router) handle(c *context.Context) {
 		c.Params = params
 		c.Handlers = append(c.Handlers, r.handlers[key])
 	} else {
-		c.Handlers = append(c.Handlers, func(c *context.Context) {
+		c.Handlers = append(c.Handlers, func(c *Context) {
+			c.Status(404)
 			c.String(http.StatusNotFound, "404 NOT FOUND: %s\n", c.Path)
 		})
-
-		c.Next()
 	}
+	c.Next()
 }

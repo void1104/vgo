@@ -1,10 +1,10 @@
-package logs
+package log
 
 import (
 	"fmt"
 	"os"
 	"time"
-	"vgo/context"
+	"vgo/core"
 )
 
 type Entry struct {
@@ -20,7 +20,7 @@ type Entry struct {
 	Message string
 
 	// Contains the context set by the user. Useful for hook processing etc.
-	Context context.Context
+	Context core.Context
 
 	// err may contain a field formatting error
 	err string

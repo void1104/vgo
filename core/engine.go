@@ -1,13 +1,13 @@
-package router
+package core
 
 import (
 	"net/http"
 	"strings"
-	"vgo/context"
+	//router2 "vgo/router"
 )
 
 // HandlerFunc 定义vgo对于请求的handler
-type HandlerFunc func(ctx *context.Context)
+type HandlerFunc func(ctx *Context)
 
 // Engine 实现ServeHTTP方法 -> 实现Handler接口
 type Engine struct {
@@ -39,6 +39,7 @@ func (engine *Engine) POST(pattern string, handler HandlerFunc) {
 
 // Run 定义启动http server的方法
 func (engine *Engine) Run(addr string) (err error) {
+	// TODO 打印服务器启动日志
 	return http.ListenAndServe(addr, engine)
 }
 
@@ -50,7 +51,7 @@ func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 	// 1. 每一次请求都会生成新的context TODO 为请求做缓存
-	c := context.NewContext(w, req)
+	c := NewContext(w, req)
 
 	c.Handlers = middlewares
 

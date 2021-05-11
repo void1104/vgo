@@ -1,10 +1,9 @@
-package context
+package core
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"vgo/router"
 )
 
 /**
@@ -26,7 +25,7 @@ type Context struct {
 	// response info
 	StatusCode int
 	// middleware
-	Handlers []router.HandlerFunc
+	Handlers []HandlerFunc
 	index    int
 }
 
