@@ -2,7 +2,7 @@ package log
 
 var (
 	// std is the name of the standard logger in stdlib `log`
-	std = NewLogger()
+	std = newLogger()
 )
 
 // Trace logs a message at level Trace on the standard logger.
@@ -33,4 +33,9 @@ func Error(args ...interface{}) {
 // Panic logs a message at level Panic on the standard logger.
 func Panic(args ...interface{}) {
 	std.Panic(args...)
+}
+
+// SetLogPath set the file path where the log to writer.
+func SetLogPath(logPath string) {
+	std.SetLogPath(logPath)
 }

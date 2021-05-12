@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 )
+
 // 各日志级别
 const (
 	PanicLevel Level = iota
@@ -17,6 +18,8 @@ const (
 	DebugLevel
 	TraceLevel
 )
+
+const DefaultLogPath = "./log.txt"
 
 // Level type
 type Level uint32
@@ -35,6 +38,8 @@ type Logger struct {
 	entryPool sync.Pool
 	// Function to exit the application, default to `os.Exit()`
 	ExitFunc exitFunc
+	// log file path
+	LogPath string
 }
 
 type MutexWrap struct {
@@ -61,17 +66,18 @@ func (mw *MutexWrap) Disable() {
 type exitFunc func(int)
 
 // NewLogger 建议创建一个全局实例log，也可以自定义通过 &logs.Logger{}自定义生成日志对象
-func NewLogger() *Logger {
+func newLogger() *Logger {
 	return &Logger{
-		Out:          os.Stderr,
+		Out:          os.Stdout,
 		Level:        InfoLevel,
 		ExitFunc:     os.Exit,
 		ReportCaller: false,
+		LogPath:      DefaultLogPath,
 	}
 }
 
+// newEntry 这里使用池来缓存对象，避免项目大量重复地创建许多对象。
 func (logger *Logger) newEntry() *Entry {
-	// 这里使用池来缓存对象，避免项目大量重复地创建许多对象。
 	entry, ok := logger.entryPool.Get().(*Entry)
 	if ok {
 		return entry
@@ -79,8 +85,14 @@ func (logger *Logger) newEntry() *Entry {
 	return NewEntry(logger)
 }
 
+// releaseEntry 将entry对象放回对象池
 func (logger *Logger) releaseEntry(entry *Entry) {
 	logger.entryPool.Put(entry)
+}
+
+// SetLogPath 设置日志输出文件路径
+func (logger *Logger) SetLogPath(logPath string) {
+	logger.LogPath = logPath
 }
 
 func (logger *Logger) Log(level Level, args ...interface{}) {

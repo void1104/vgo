@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"time"
-	"vgo/core"
 )
 
 type Entry struct {
@@ -20,7 +19,7 @@ type Entry struct {
 	Message string
 
 	// Contains the context set by the user. Useful for hook processing etc.
-	Context core.Context
+	//Context core.Context
 
 	// err may contain a field formatting error
 	err string
@@ -49,9 +48,28 @@ func (entry *Entry) write() {
 
 	entry.Logger.mu.Lock()
 	defer entry.Logger.mu.Unlock()
-	// TODO 日志文件输入路径
-	if _, err := entry.Logger.Out.Write(log); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to write to log, #{err}\n")
+
+	// 将日志输入到指定文件路径
+	file, err := os.OpenFile(entry.Logger.LogPath, os.O_WRONLY, 0644)
+	if err != nil && os.IsNotExist(err) {
+		file, err = os.Create(entry.Logger.LogPath)
+		if err != nil {
+			_, _ = fmt.Fprintf(os.Stderr, "fail open local log file")
+			os.Exit(1)
+		}
+	}
+	defer file.Close()
+
+	// file 类型实现了io.Writer
+	n, _ := file.Seek(0, 2)
+	_, fErr := file.WriteAt(log, n)
+	if fErr != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "fail write log to local file")
+		os.Exit(1)
+	}
+
+	if _, err = entry.Logger.Out.Write(log); err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Failed to write to log, #{err}\n")
 	}
 }
 

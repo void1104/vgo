@@ -3,7 +3,7 @@ package core
 import (
 	"net/http"
 	"strings"
-	//router2 "vgo/router"
+	"vgo/log"
 )
 
 // HandlerFunc 定义vgo对于请求的handler
@@ -41,7 +41,7 @@ func (engine *Engine) POST(pattern string, handler HandlerFunc) {
 
 // Run 定义启动http server的方法
 func (engine *Engine) Run(addr string) (err error) {
-	// TODO 打印服务器启动日志
+	log.Info("http server Run...")
 	return http.ListenAndServe(addr, engine)
 }
 
