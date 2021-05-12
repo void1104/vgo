@@ -66,3 +66,9 @@ func TestRouteConflict(t *testing.T) {
 	r.addRoute("GET", "/conflict", nil)
 	r.addRoute("GET", "/conflict", nil)
 }
+
+// BenchmarkRequest 性能测试
+func BenchmarkRequest(b *testing.B) {
+	r := New()
+	r.GET("/test", nil)
+}
