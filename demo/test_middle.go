@@ -1,27 +1,5 @@
 package main
 
-import (
-	"vgo/core"
-	"vgo/log"
-)
-
-func onlyForV2() core.HandlerFunc {
-	return func(ctx *core.Context) {
-		if ctx.Params["name"] != "pjx" {
-			ctx.AuthFail()
-		}
-		log.Error("v2 fatal")
-		ctx.Next()
-	}
-}
-
-func Logger() core.HandlerFunc {
-	return func(c *core.Context) {
-		c.Next()
-		log.Info("logger 日志打印")
-	}
-}
-
 //func main() {
 //	//r := core.New()
 //	//r.Use(Logger()) // 全局中间件

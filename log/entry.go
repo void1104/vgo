@@ -77,6 +77,7 @@ func (entry *Entry) Log(level Level, args ...interface{}) {
 	entry.log(level, fmt.Sprint(args...))
 }
 
+// formatter 日志内容格式化函数
 func (entry *Entry) formatter() []byte {
 	timestamp := "[" + time.Now().Format("2006-01-02 15:04:05") + "]"
 	level := "[" + entry.Level.String() + "] "

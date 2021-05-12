@@ -1,41 +1,13 @@
-[2021-05-12 01:18:40][info] http server Run...
-[2021-05-12 01:18:47][info] test log write local
-[2021-05-12 01:18:47][info] test log write local
-[2021-05-12 01:18:47][info] test log write local
-[2021-05-12 01:18:47][info] test log write local
-[2021-05-12 01:18:47][info] test log write local
-[2021-05-12 01:18:47][info] test log write local
-[2021-05-12 01:18:47][info] test log write local
-[2021-05-12 01:18:47][info] test log write local
-[2021-05-12 01:18:47][info] test log write local
-[2021-05-12 01:18:47][info] test log write local
-[2021-05-12 01:18:48][info] test log write local
-[2021-05-12 01:18:48][info] test log write local
-[2021-05-12 01:18:48][info] test log write local
-[2021-05-12 01:18:48][info] test log write local
-[2021-05-12 01:18:48][info] test log write local
-[2021-05-12 01:18:48][info] test log write local
-[2021-05-12 01:18:48][info] test log write local
-[2021-05-12 01:18:48][info] test log write local
-[2021-05-12 01:18:48][info] test log write local
-[2021-05-12 01:18:48][info] test log write local
-[2021-05-12 01:18:49][info] test log write local
-[2021-05-12 01:18:49][info] test log write local
-[2021-05-12 01:18:49][info] test log write local
-[2021-05-12 01:18:49][info] test log write local
-[2021-05-12 01:18:49][info] test log write local
-[2021-05-12 01:18:49][info] test log write local
-[2021-05-12 01:18:49][info] test log write local
-[2021-05-12 01:18:49][info] test log write local
-[2021-05-12 01:18:49][info] test log write local
-[2021-05-12 01:18:49][info] test log write local
-[2021-05-12 01:18:50][info] test log write local
-[2021-05-12 01:18:50][info] test log write local
-[2021-05-12 01:18:50][info] test log write local
-[2021-05-12 01:18:50][info] test log write local
-[2021-05-12 01:18:50][info] test log write local
-[2021-05-12 01:18:50][info] test log write local
-[2021-05-12 01:18:50][info] test log write local
-[2021-05-12 01:18:50][info] test log write local
-[2021-05-12 01:18:50][info] test log write local
-[2021-05-12 01:18:50][info] test log write local
+[2021-05-12 14:42:46][info] http server Run...
+[2021-05-12 14:42:51][info] 用户登录成功
+[2021-05-12 14:42:53][info] 用户登录失败，账号或密码错误
+[2021-05-12 14:43:13][info] test log write local
+[2021-05-12 14:43:13][info] test log write local
+[2021-05-12 14:43:15][info] test log write local
+[2021-05-12 14:43:15][info] test log write local
+[2021-05-12 14:43:53][info] 用户登录成功
+[2021-05-12 14:44:01][info] 用户登录失败，账号或密码错误
+[2021-05-12 14:44:10][info] 用户登录失败，账号或密码错误
+[2021-05-12 14:44:12][info] 用户登录成功
+[2021-05-12 14:44:18][info] test log write local
+[2021-05-12 14:44:18][info] test log write local

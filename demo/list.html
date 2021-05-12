@@ -19,28 +19,37 @@
     <div class="col-md-12 column">
       <ul id="log_list">
         <li>
-          Lorem ipsum dolor sit amet
+          [2021-05-12 14:42:46][info] http server Run...
         </li>
         <li>
-          Consectetur adipiscing elit
+          [2021-05-12 14:42:51][info] 用户登录成功
         </li>
         <li>
-          Integer molestie lorem at massa
+          [2021-05-12 14:42:53][info] 用户登录失败，账号或密码错误
         </li>
         <li>
-          Facilisis in pretium nisl aliquet
+          [2021-05-12 14:43:13][info] test log write local
         </li>
         <li>
-          Nulla volutpat aliquam velit
+          [2021-05-12 14:43:13][info] test log write local
         </li>
         <li>
-          Faucibus porta lacus fringilla vel
+          [2021-05-12 14:43:53][info] 用户登录成功
         </li>
         <li>
-          Aenean sit amet erat nunc
+          [2021-05-12 14:44:01][info] 用户登录失败，账号或密码错误
         </li>
         <li>
-          Eget porttitor lorem
+          [2021-05-12 14:44:10][info] 用户登录失败，账号或密码错误
+        </li>
+        <li>
+          [2021-05-12 14:44:12][info] 用户登录成功
+        </li>
+        <li>
+          [2021-05-12 14:44:18][info] test log write local
+        </li>
+        <li>
+          [2021-05-12 14:44:18][info] test log write local
         </li>
       </ul>
     </div>
@@ -48,16 +57,19 @@
 </div>
 
 <script>
-  window.onload = function (){
-    let logList = document.querySelector("#log_list")
-    let li = document.createElement("li")
-    li.innerText = "hello"
-    logList.appendChild(li)
-
-    $.ajax({url:"/log/list",success:function (res) {
-
-      }})
-  }
+  // window.onload = function (){
+  //   let logList = document.querySelector("#log_list")
+  //   let li = document.createElement("li")
+  //   li.innerText = "hello"
+  //   logList.appendChild(li)
+  //
+  //   $.ajax({url:"/log/list",success:function (res) {
+  //
+  //     }})
+  // }
+  // $(document).read(function (){
+  //
+  // })
 </script>
 </body>
 </html>
