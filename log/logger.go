@@ -27,6 +27,12 @@ type Level uint32
 type Logger struct {
 	// 一般将日志输出到一个文件，也可以输出到Kafka
 	Out io.Writer
+
+	// Hooks for the logger instance. These allow firing events based on logging
+	// levels and log entries. For example, to send errors to an error tracking
+	// service, log to StatsD or dump the core on fatal errors.
+	Hooks LevelHooks
+
 	// Flag for whether to log caller info (off by default)
 	ReportCaller bool
 
@@ -90,9 +96,25 @@ func (logger *Logger) releaseEntry(entry *Entry) {
 	logger.entryPool.Put(entry)
 }
 
+// SetOutput sets the logger output.
+func (logger *Logger) SetOutput(output io.Writer) {
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
+	logger.Out = output
+}
+
 // SetLogPath 设置日志输出文件路径
 func (logger *Logger) SetLogPath(logPath string) {
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
 	logger.LogPath = logPath
+}
+
+// AddHook adds a hook to the logger hooks.
+func (logger *Logger) AddHook(hook Hook) {
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
+	logger.Hooks.Add(hook)
 }
 
 func (logger *Logger) Log(level Level, args ...interface{}) {
@@ -123,6 +145,15 @@ func (logger *Logger) Error(args ...interface{}) {
 
 func (logger *Logger) Panic(args ...interface{}) {
 	logger.Log(PanicLevel, args...)
+	logger.Exit(1)
+}
+
+func (logger *Logger) Exit(code int) {
+	//runHandlers()
+	if logger.ExitFunc == nil {
+		logger.ExitFunc = os.Exit
+	}
+	logger.ExitFunc(code)
 }
 
 // Convert the Level to a string. E.g. PanicLevel becomes "panic".

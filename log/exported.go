@@ -1,5 +1,7 @@
 package log
 
+import "io"
+
 var (
 	// std is the name of the standard logger in stdlib `log`
 	std = newLogger()
@@ -38,4 +40,9 @@ func Panic(args ...interface{}) {
 // SetLogPath set the file path where the log to writer.
 func SetLogPath(logPath string) {
 	std.SetLogPath(logPath)
+}
+
+// SetOutput set the file output
+func SetOutput(output io.Writer) {
+	std.SetOutput(output)
 }

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
+	"time"
 )
 
 /**
@@ -27,6 +29,11 @@ type Context struct {
 	// middleware
 	Handlers []HandlerFunc
 	index    int
+
+	// This mutex protect Keys map
+	mu sync.RWMutex
+	// keys is a k/v pair exclusively for the context of each request.
+	keys map[string]interface{}
 }
 
 // NewContext context的构造函数
@@ -116,4 +123,89 @@ func (c *Context) AuthFail() {
 func (c *Context) Param(key string) string {
 	value, _ := c.Params[key]
 	return value
+}
+
+// Set is used to store a k/v pair exclusively for this context.
+// It also lazy initializes c.Keys if it was not used previously.
+func (c *Context) Set(key string, value interface{}) {
+	c.mu.Lock()
+	if c.keys == nil {
+		c.keys = make(map[string]interface{})
+	}
+
+	c.keys[key] = value
+	c.mu.Unlock()
+}
+
+// Get returns the value for the given key, ie: (value, true).
+// If the value does not exists it returns (nil, false)
+func (c *Context) Get(key string) (value interface{}, exists bool) {
+	c.mu.RLocker()
+	value, exists = c.keys[key]
+	c.mu.RUnlock()
+	return
+}
+
+// GetString returns the value associated with the key as a string.
+func (c *Context) GetString(key string) (s string) {
+	if val, ok := c.Get(key); ok && val != nil {
+		s, _ = val.(string)
+	}
+	return
+}
+
+// GetBool returns the value associated with the key as a boolean.
+func (c *Context) GetBool(key string) (b bool) {
+	if val, ok := c.Get(key); ok && val != nil {
+		b, _ = val.(bool)
+	}
+	return
+}
+
+// GetInt returns the value associated with the key as an integer.
+func (c *Context) GetInt(key string) (i int) {
+	if val, ok := c.Get(key); ok && val != nil {
+		i, _ = val.(int)
+	}
+	return
+}
+
+// GetInt64 returns the value associated with the key as an integer.
+func (c *Context) GetInt64(key string) (i int64) {
+	if val, ok := c.Get(key); ok && val != nil {
+		i, _ = val.(int64)
+	}
+	return
+}
+
+// GetUint returns the value associated with the key as an unsigned integer.
+func (c *Context) GetUint(key string) (i uint) {
+	if val, ok := c.Get(key); ok && val != nil {
+		i, _ = val.(uint)
+	}
+	return
+}
+
+// GetUint64 returns the value associated with the key as an unsigned integer.
+func (c *Context) GetUint64(key string) (i uint64) {
+	if val, ok := c.Get(key); ok && val != nil {
+		i, _ = val.(uint64)
+	}
+	return
+}
+
+// GetFloat64 returns the value associated with the key as an float64.
+func (c *Context) GetFloat64(key string) (f64 float64) {
+	if val, ok := c.Get(key); ok && val != nil {
+		f64, _ = val.(float64)
+	}
+	return
+}
+
+// GetTime returns the value associated with the key as a time.
+func (c *Context) GetTime(key string) (t time.Time) {
+	if val, ok := c.Get(key); ok && val != nil {
+		t, _ = val.(time.Time)
+	}
+	return
 }

@@ -1,6 +1,7 @@
 package log
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -19,18 +20,30 @@ type Entry struct {
 	Message string
 
 	// Contains the context set by the user. Useful for hook processing etc.
-	//Context core.Context
+	Context context.Context
 
 	// err may contain a field formatting error
 	err string
 }
 
+// NewEntry 节点构造函数
 func NewEntry(logger *Logger) *Entry {
 	return &Entry{
-		Logger: logger,
+		Logger:  logger,
+		Time:    time.Now(),
+		Level:   InfoLevel,
+		Message: "",
+		Context: context.Background(),
+		err:     "",
 	}
 }
 
+// Log 暴露的Log方法
+func (entry *Entry) Log(level Level, args ...interface{}) {
+	entry.log(level, fmt.Sprint(args...))
+}
+
+// log 内部处理函数
 func (entry *Entry) log(level Level, msg string) {
 
 	if entry.Time.IsZero() {
@@ -39,9 +52,28 @@ func (entry *Entry) log(level Level, msg string) {
 	entry.Level = level
 	entry.Message = msg
 
+	entry.fireHooks()
+
 	entry.write()
 }
 
+// fireHooks run all the hooks
+func (entry *Entry) fireHooks() {
+	var tmpHooks LevelHooks
+	entry.Logger.mu.Lock()
+	tmpHooks = make(LevelHooks, len(entry.Logger.Hooks))
+	for k, v := range entry.Logger.Hooks {
+		tmpHooks[k] = v
+	}
+	entry.Logger.mu.Unlock()
+
+	err := tmpHooks.Fire(entry.Level, entry)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Failed to fire hook: %v\n", err)
+	}
+}
+
+// write 写入方法
 func (entry *Entry) write() {
 
 	log := entry.formatter()
@@ -71,10 +103,6 @@ func (entry *Entry) write() {
 	if _, err = entry.Logger.Out.Write(log); err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Failed to write to log, #{err}\n")
 	}
-}
-
-func (entry *Entry) Log(level Level, args ...interface{}) {
-	entry.log(level, fmt.Sprint(args...))
 }
 
 // formatter 日志内容格式化函数
