@@ -16,7 +16,11 @@ Context承载。因此，设计Context结构，扩展性和复杂性留在了内
 
 type H map[string]interface{}
 
+// Context is the most important part of gin. It allows us to pass variables
+// between middleware, manage the flow, validate the JSON of a request and
+// render a JSON response for example
 type Context struct {
+	//writerMem http.ResponseWriter
 	// origin objects
 	Writer http.ResponseWriter
 	Req    *http.Request
@@ -46,6 +50,22 @@ func NewContext(w http.ResponseWriter, req *http.Request) *Context {
 		index:  -1,
 	}
 }
+
+func (c *Context) reset() {
+	c.Req = nil
+	c.Writer = nil
+	c.Path = ""
+	c.Method = ""
+	c.Params = nil
+
+	c.Handlers = nil
+	c.index = -1
+	c.keys = nil
+}
+
+// Copy returns a copy of the current context that can be safely used outside the request's scope
+// This has to be used when the context has to be passed to a goroutine
+
 
 func (c *Context) Next() {
 	c.index++
