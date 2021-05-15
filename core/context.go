@@ -3,16 +3,17 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"math"
+	"mime/multipart"
 	"net/http"
+	"net/url"
+	"os"
 	"sync"
 	"time"
 )
 
-/**
-对request和response的封装，只是设计Context的原因之一。对于框架来说，还需要支撑额外的功能，
-例如保存中间件产生的信息。Context随着每一个请求的出现而产生，请求的结束而销毁，和当前请求强相关的信息都应由
-Context承载。因此，设计Context结构，扩展性和复杂性留在了内部，而对外简化了接口。
-*/
+const abortIndex int8 = math.MaxInt8 / 2
 
 type H map[string]interface{}
 
@@ -32,13 +33,35 @@ type Context struct {
 	StatusCode int
 	// middleware
 	Handlers []HandlerFunc
-	index    int
+	index    int8
 
 	// This mutex protect Keys map
 	mu sync.RWMutex
+
 	// keys is a k/v pair exclusively for the context of each request.
 	keys map[string]interface{}
+
+	// Errors is a list of errors attached to all the handlers/middlewares who used this context.
+	Errors errorMsgs
+
+	// Accepted defines a list of manually accepted formats for content negotiation.
+	Accepted []string
+
+	// queryCache use url.ParseQuery cached the param query result from c.Request.URL.Query().
+	queryCache url.Values
+
+	// formCache use url.ParseQuery cached PostForm contains the parsed form data from POST, PATCH
+	// or PUT body parameters.
+	formCache url.Values
+
+	// sameSite allows a server to define a cookie attribute making it impossible for
+	// the browser to send this cookie along with cross-site requests.
+	sameSite http.SameSite
 }
+
+/************************************/
+/********** CONTEXT CREATION ********/
+/************************************/
 
 // NewContext context的构造函数
 func NewContext(w http.ResponseWriter, req *http.Request) *Context {
@@ -69,14 +92,106 @@ func (c *Context) Copy() *Context {
 	return nil
 }
 
+// HandlerName returns the main handler's name. For example if the handler is 'handlerGetUsers()',
+// this function will return 'main.handleGetUses'.
+func (c *Context) HandlerName() string {
+	return nameOfFunction(c.Handlers[len(c.Handlers)-1])
+}
 
+// HandlerNames return a list of all registered handlers for this context in descending order,
+// following the semantics of HandlerName()
+func (c *Context) HandlerNames() []string {
+	hn := make([]string, 0, len(c.Handlers))
+	for _, val := range c.Handlers {
+		hn = append(hn, nameOfFunction(val))
+	}
+	return hn
+}
+
+// Handler returns the main handler.
+func (c *Context) Handler() HandlerFunc {
+	return c.Handlers[len(c.Handlers)-1]
+}
+
+/************************************/
+/*********** FLOW CONTROL ***********/
+/************************************/
+
+// Next should be used only inside middleware.
+// It executes the pending handlers in the chain inside the calling handler.
 func (c *Context) Next() {
 	c.index++
-	s := len(c.Handlers)
-	for ; c.index < s; c.index++ {
+	for c.index < int8(len(c.Handlers)) {
 		c.Handlers[c.index](c)
+		c.index++
 	}
 }
+
+// IsAborted returns true if the current context was aborted.
+func (c *Context) IsAborted() bool {
+	return c.index >= abortIndex
+}
+
+// Abort prevents pending handlers from being called. Note that this will not stop the current handler.
+// Let's say you have an authorization middleware that validates that the current request is authorized.
+// If the authorization fails (ex: the password does not match), call Abort to ensure the remaining handlers
+// for this request are not called
+func (c *Context) Abort() {
+	c.index = abortIndex
+}
+
+// AbortWithStatus calls `Abort()` and writes and specified status code.
+// For example, a failed attempt to authenticate a request could use: context.AbortWithStatus(401).
+func (c *Context) AbortWithStatus(code int) {
+	c.Status(code)
+	c.Abort()
+}
+
+// AbortWithStatusJSON calls `Abort()` and then `JSON` internally.
+// This method stops the chain, writes the status code and return a JSON body.
+// It also sets the Content-Type as "application/json".
+func (c *Context) AbortWithStatusJSON(code int, jsonObj interface{}) {
+	c.Abort()
+	c.JSON(code, jsonObj)
+}
+
+// AbortWithError calls `AbortWithStatus()` and `Error()` internally.
+// This method stops the chain, writes the status code and pushes the specified error to `c.Errors`.
+// See Context.Error() for more details.
+func (c *Context) AbortWithError(code int, err error) *Error {
+	c.AbortWithStatus(code)
+	return c.Error(err)
+}
+
+/************************************/
+/********* ERROR MANAGEMENT *********/
+/************************************/
+
+// Error attaches an error to the current context. The error is pushed to a list of errors.
+// It's a good idea to call Error for each error that occurred during the resolution of a request.
+// A middleware can be used to collect all the errors an push them to a database together,
+// print a log, or append it in the HTTP response.
+// Error will panic if err is nil.
+func (c *Context) Error(err error) *Error {
+	if err != nil {
+		panic("err is nil")
+	}
+
+	parsedError, ok := err.(*Error)
+	if !ok {
+		parsedError = &Error{
+			Err:  err,
+			Type: ErrorTypePrivate,
+		}
+	}
+
+	c.Errors = append(c.Errors, parsedError)
+	return parsedError
+}
+
+/************************************/
+/************ INPUT DATA ************/
+/************************************/
 
 // PostForm  获取请求体中的请求参数 - Form表单
 func (c *Context) PostForm(key string) string {
@@ -86,6 +201,64 @@ func (c *Context) PostForm(key string) string {
 // Query 获取请求体中的请求参数 - url
 func (c *Context) Query(key string) string {
 	return c.Req.URL.Query().Get(key)
+}
+
+func (c *Context) initQueryCache() {
+	if c.queryCache == nil {
+		if c.Req != nil {
+			c.queryCache = c.Req.URL.Query()
+		} else {
+			c.queryCache = url.Values{}
+		}
+	}
+}
+
+func (c *Context) initFormCache() {
+	if c.formCache == nil {
+		c.formCache = make(url.Values)
+		req := c.Req
+		c.formCache = req.PostForm
+	}
+}
+
+// FormFile returns the first file for the provided form key.
+func (c *Context) FormFile(name string) (*multipart.FileHeader, error) {
+	if c.Req.MultipartForm == nil {
+		return nil, Error{
+			Type: ErrorTypePrivate,
+			Meta: "request.multipartFrom is nil",
+		}
+	}
+
+	file, fileHeader, err := c.Req.FormFile(name)
+	if err != nil {
+		return nil, err
+	}
+	_ = file.Close()
+	return fileHeader, err
+}
+
+// MultipartForm is the parsed multipart form, including file uploads.
+func (c *Context) MultipartForm() (*multipart.Form, error) {
+	return nil, nil
+}
+
+// SaveUploadFile uploads the form file to specific dst.
+func (c *Context) SaveUploadFile(file *multipart.FileHeader, dst string) error {
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, src)
+	return err
 }
 
 // Status 设置响应状态码
