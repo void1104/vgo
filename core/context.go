@@ -13,15 +13,15 @@ import (
 	"time"
 )
 
+// abortIndex 允许中间件中断执行
 const abortIndex int8 = math.MaxInt8 / 2
 
 type H map[string]interface{}
 
-// Context is the most important part of gin. It allows us to pass variables
+// Context is the most important part of vgo. It allows us to pass variables
 // between middleware, manage the flow, validate the JSON of a request and
 // render a JSON response for example
 type Context struct {
-	//writerMem http.ResponseWriter
 	// origin objects
 	Writer http.ResponseWriter
 	Req    *http.Request

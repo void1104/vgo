@@ -61,11 +61,11 @@ func TestGetRoute2(t *testing.T) {
 }
 
 // TestRouteConflict 测试路由冲突
-func TestRouteConflict(t *testing.T) {
-	r := newTestRouter()
-	r.addRoute("GET", "/conflict", nil)
-	r.addRoute("GET", "/conflict", nil)
-}
+//func TestRouteConflict(t *testing.T) {
+//	r := newTestRouter()
+//	r.addRoute("GET", "/conflict", nil)
+//	r.addRoute("GET", "/conflict", nil)
+//}
 
 // BenchmarkRequest 性能测试
 func BenchmarkRequest(b *testing.B) {
