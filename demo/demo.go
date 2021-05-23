@@ -1,11 +1,7 @@
 package main
 
 import (
-	"bufio"
-	"io"
 	"net/http"
-	"os"
-	"strings"
 	"vgo/core"
 	"vgo/log"
 )
@@ -14,6 +10,17 @@ func Logger() core.HandlerFunc {
 	return func(c *core.Context) {
 		c.Next()
 		log.Info("test log write local")
+	}
+}
+
+func Cors() core.HandlerFunc {
+	return func(c *core.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Request-Method", "OPTION,GET,POST")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Next()
 	}
 }
 
@@ -28,59 +35,36 @@ func AuthCheck() core.HandlerFunc {
 	}
 }
 
+const TestLogPath = "D:\\log.txt"
+
 func main() {
+	// 1.构建框架环境
 	r := core.New()
+	log.SetLogPath("D://log.txt") // 自定义设置日志输出路径
+	// 2. 注册中间件
 	r.Use(Logger())
+
+	// 3. 注册路由
 	r.GET("/log/list", logList)
 	r.POST("/login", login)
 
-	gr := r.Group("/admin")
-	gr.Use(AuthCheck())
+	// 4. 注册分组路由
+	gr := r.Group("/cors")
+	gr.Use(Cors()) // cors分组下使用cors中间件设置跨域
 	{
-		gr.GET("/check", nil)
+		gr.GET("/log/list", logList)
+		gr.POST("/login", login)
+
+		// 5. 动态路由 - 参数匹配
+		gr.GET("/hello/:name/space", func(ctx *core.Context) {
+			ctx.String(http.StatusOK, "The dynamic routing passes in parameters: %s", ctx.Params["name"])
+		})
+
+		// 6. 动态路由 - 模糊匹配
+		gr.GET("/static/*filepath", func(ctx *core.Context) {
+			ctx.String(http.StatusOK, "The dynamic routing passes in parameters: /%s", ctx.Params["filepath"])
+		})
 	}
 
 	r.Run(":9999")
-}
-
-// 鉴权接口 - 测试路由分组
-func admin(ctx *core.Context) {
-
-}
-
-// 登录接口 - 测试路由POST方法
-func login(ctx *core.Context) {
-	username := ctx.PostForm("username")
-	password := ctx.PostForm("password")
-	if username == "pjx@cq.com" && password == "1104" {
-		log.Info("用户登录成功")
-		ctx.JSON(500, "success")
-	} else {
-		log.Info("用户登录失败，账号或密码错误")
-		ctx.Fail()
-	}
-}
-
-// 日志列表 - 测试路由GET方法
-func logList(ctx *core.Context) {
-	file, err := os.Open("./log.txt")
-	if err != nil {
-		ctx.Fail()
-		return
-	}
-	var list []string
-	buf := bufio.NewReader(file)
-	for {
-		line, inErr := buf.ReadString('\n')
-		if inErr != nil {
-			if inErr == io.EOF {
-				break
-			}
-			ctx.Fail()
-			return
-		}
-		line = strings.TrimSpace(line)
-		list = append(list, line)
-	}
-	ctx.JSON(http.StatusOK, list)
 }

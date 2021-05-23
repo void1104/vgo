@@ -2,74 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-  <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js">
-  </script>
-  <link href="bootstrap-3.4.1-dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js">
+    </script>
+    <link href="bootstrap-3.4.1-dist/css/bootstrap.min.css" rel="stylesheet"/>
     <title>Title</title>
 </head>
 <body>
 <div class="container">
-  <div class="alert alert-success alert-dismissable">
-    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-    <h4>
-      vgo
-    </h4> <strong> 框架列表demo -- router模块测试 </strong>
-  </div>
-  <div class="row clearfix">
-    <div class="col-md-12 column">
-      <ul id="log_list">
-        <li>
-          [2021-05-12 14:42:46][info] http server Run...
-        </li>
-        <li>
-          [2021-05-12 14:42:51][info] 用户登录成功
-        </li>
-        <li>
-          [2021-05-12 14:42:53][info] 用户登录失败，账号或密码错误
-        </li>
-        <li>
-          [2021-05-12 14:43:13][info] test log write local
-        </li>
-        <li>
-          [2021-05-12 14:43:13][info] test log write local
-        </li>
-        <li>
-          [2021-05-12 14:43:53][info] 用户登录成功
-        </li>
-        <li>
-          [2021-05-12 14:44:01][info] 用户登录失败，账号或密码错误
-        </li>
-        <li>
-          [2021-05-12 14:44:10][info] 用户登录失败，账号或密码错误
-        </li>
-        <li>
-          [2021-05-12 14:44:12][info] 用户登录成功
-        </li>
-        <li>
-          [2021-05-12 14:44:18][info] test log write local
-        </li>
-        <li>
-          [2021-05-12 14:44:18][info] test log write local
-        </li>
-      </ul>
+    <div class="alert alert-success alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <h4>
+            vgo
+        </h4> <strong> 框架列表demo -- router模块测试 </strong>
     </div>
-  </div>
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <ul id="log_list">
+            </ul>
+        </div>
+    </div>
 </div>
 
 <script>
-  // window.onload = function (){
-  //   let logList = document.querySelector("#log_list")
-  //   let li = document.createElement("li")
-  //   li.innerText = "hello"
-  //   logList.appendChild(li)
-  //
-  //   $.ajax({url:"/log/list",success:function (res) {
-  //
-  //     }})
-  // }
-  // $(document).read(function (){
-  //
-  // })
+    $.get("http://localhost:9999/log/list",
+        {},
+        // 回调
+        function (data) {
+            console.log(data)
+            let ul = document.querySelector("#log_list");
+            for (let i = 0; i < data.length; i++) {
+                let li = document.createElement("li");
+                li.innerText = data[i];
+                ul.appendChild(li);
+            }
+        }
+    )
 </script>
 </body>
 </html>

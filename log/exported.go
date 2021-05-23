@@ -46,3 +46,8 @@ func SetLogPath(logPath string) {
 func SetOutput(output io.Writer) {
 	std.SetOutput(output)
 }
+
+////
+//func AddHook() {
+//
+//}
