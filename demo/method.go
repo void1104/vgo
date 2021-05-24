@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -48,9 +47,4 @@ func logList(ctx *core.Context) {
 		list = append(list, line)
 	}
 	ctx.JSON(http.StatusOK, list)
-}
-
-func testOutOfArrayIndex(ctx *core.Context) {
-	arr := []int{1, 2, 3}
-	fmt.Println(arr[4])
 }

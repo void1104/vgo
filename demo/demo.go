@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"vgo/core"
 	"vgo/log"
@@ -24,29 +25,23 @@ func Cors() core.HandlerFunc {
 	}
 }
 
-func AuthCheck() core.HandlerFunc {
-	return func(ctx *core.Context) {
-		if ctx.PostForm("username") != "pjx@cq.com" {
-			log.Info("访问接口失败，非权限人员访问")
-			ctx.AuthFail()
-		}
-		log.Info("鉴权成功")
-		ctx.Next()
-	}
-}
-
-const TestLogPath = "D:\\log.txt"
+const TestLogPath = "D:\\log.txt" // 测试日志路径
 
 func main() {
 	// 1.构建框架环境
 	r := core.New()
-	log.SetLogPath("D://log.txt") // 自定义设置日志输出路径
+	//log.SetLogPath(TestLogPath) // 自定义设置日志输出路径
 	// 2. 注册中间件
 	r.Use(Logger())
 
-	// 3. 注册路由
+	// 3. 注册路由，跨域报错 -> 无法访问。
 	r.GET("/log/list", logList)
 	r.POST("/login", login)
+	r.GET("/ping", func(c *core.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
 
 	// 4. 注册分组路由
 	gr := r.Group("/cors")
@@ -66,5 +61,5 @@ func main() {
 		})
 	}
 
-	r.Run(":9999")
+	_ = r.Run(":9999")
 }

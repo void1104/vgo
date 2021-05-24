@@ -35,7 +35,7 @@
 </body>
 <script type="text/javascript">
     $("#loginBtn").click(function () {
-        $.post("http://localhost:9999/login",
+        $.post("http://localhost:9999/cors/login",
             {
                 "username": $("#username").val(),
                 "password": $("#password").val(),
